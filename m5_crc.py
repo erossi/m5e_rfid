@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import serial
+import argparse
 
 # /* From the datasheet this is the C function used to
 # Calculate the CRC */
@@ -75,18 +76,23 @@ class Rfid:
         """
 
         self._s.flushInput()
-        self.crc = 0xffff
 
-        for i in cmd:
-            self.CRC_calcCrc8(i)
+        if (cmd[0] != 255):
+            self.crc = 0xffff
+            # Need to include len() in the CRC
+            cmd = (len(cmd)-1).to_bytes(1, byteorder='big') + cmd
 
-        cmd = b'\xff' + cmd + self.crc.to_bytes(2, byteorder='big')
+            for i in cmd:
+                self.CRC_calcCrc8(i)
+
+            cmd = b'\xff' + cmd + self.crc.to_bytes(2, byteorder='big')
+
         print(cmd.hex())
         self._s.write(cmd)
 
     def _rx(self):
 
-        rx = self._s.read(30)
+        rx = self._s.read(255)
         print(rx.hex())
 
     def connect(self, device):
@@ -106,16 +112,23 @@ class Rfid:
 
 txt = ''
 rfid = Rfid()
+parser = argparse.ArgumentParser(description='Thing Magic m5e-C CLI.')
+parser.add_argument('device', nargs='?', default='/dev/ttyUSB0',
+        help="ex. /dev/ttyUSB0 or /dev/ttyS0")
+args = parser.parse_args()
 
 # the serial port used.
-rfid.connect("/dev/ttyUSB0")
+rfid.connect(args.device)
 
 while (txt != 'xx'):
     txt = input('> ')
 
     try:
         tx = bytes.fromhex(txt)
-        rfid._tx(tx)
+
+        if (len(tx)):
+            rfid._tx(tx)
+
         rfid._rx()
     except:
         print('Error: ', txt)
@@ -123,5 +136,6 @@ while (txt != 'xx'):
 print("disconnecting the device")
 rfid.disconnect()
 del(rfid)
+del(parser)
 
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
