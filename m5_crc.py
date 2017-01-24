@@ -75,8 +75,13 @@ class Rfid:
         """ Send the command to the serial port one char at a time.
         """
 
+        # Clear the RX buffer
         self._s.flushInput()
 
+        # If the command does not start with 0xff it means
+        # it contains only the command and data.
+        # Else it is a naked command with header and crc already
+        # added and it should be sent as is.
         if (cmd[0] != 255):
             self.crc = 0xffff
             # Need to include len() in the CRC
@@ -91,6 +96,10 @@ class Rfid:
         self._s.write(cmd)
 
     def _rx(self):
+        """ Read 255 char or until timeout from the serial port.
+        This function need a serious rewrite. Right now you have to wait 10sec.
+        before see what has been received from the port.
+        """
 
         rx = self._s.read(255)
         print(rx.hex())
