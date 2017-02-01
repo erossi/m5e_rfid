@@ -14,7 +14,7 @@ ff1404000007102300010000032014100701070209000000105251
 ff00031d0c
 ff1403000007102300010000032014100701070209000000105bd1
 
-# Set the Region 97 (EU=0x02)
+# Set the Region 97 (EU=0x02) (*See note at the bottom*)
 > 9702
 ff0197024bbf
 ff00970000779e
@@ -120,6 +120,9 @@ Signulation lenght: 08 bit (1 byte to match to select the tag)
 Singulation data:   e2 (select the tag with TID starting with e2)
 
 > 28 03e8 02 01 00000002 08 xxxxxxxx 00000000 01 e2
+
+*note on command 0x97:* Using EU Region enables the LBT filter (see datasheet).
+In case of problems you can try eventually EU3 with the command 9708.
 
 ```
 
